@@ -1,0 +1,148 @@
+/* Octocon-specific overrides on top of Registration Theme's base styling. */
+
+/* Brand fonts, matching octocon.com (Nunito Sans body / Nunito headings).
+ * Loaded via the octocon_registration_theme/fonts library (see
+ * octocon_registration_theme.libraries.yml). These two custom properties are
+ * the base theme's documented subtheming hook - see css/base/tokens.css in
+ * registration_theme. */
+:root {
+  --rt-font-body: 'Nunito Sans', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --rt-font-heading: 'Nunito', var(--rt-font-body);
+}
+
+/* Logo size, matching octocon.com's own header (100px tall on desktop,
+ * scaled down a little for the sticky "mini header" state and for mobile -
+ * the base theme's default (3.5rem/2.5rem) reads noticeably smaller). The
+ * previous rule here targeted a nonexistent ".site-branding__logo" class
+ * (the real markup uses ".site-logo") and so never actually applied. */
+.site-masthead .site-logo img {
+  height: 6.25rem;
+}
+
+.site-masthead.is-stuck .site-logo img {
+  height: 4.5rem;
+}
+
+@media (max-width: 48rem) {
+  .site-masthead .site-logo img {
+    height: 5rem;
+  }
+}
+
+/* Header runs full page width (logo left, menu right), instead of the base
+ * theme's default centered/max-width masthead row. The full-bleed backdrop
+ * (banner image/color wash) and the rest of the page's content width are
+ * untouched - only this row's own constraint is lifted. */
+.site-masthead__inner.container {
+  max-width: none;
+}
+
+/* Guarantees breathing room between the logo and the nav. justify-content:
+ * space-between (base theme) alone only spaces them apart when there's
+ * spare width to begin with - just above the mobile breakpoint, where the
+ * full-width logo + nav's combined natural width is close to the viewport
+ * width, they can end up crowded right against each other. */
+.site-masthead__inner {
+  gap: 2rem;
+}
+
+/* Menu font, matching octocon.com (Nunito, 18px) rather than the theme's
+ * body font/size used elsewhere. Targets any link in the nav, not
+ * ".menu-item a" (the base theme's own convention): the live primary menu
+ * block here is actually a Superfish menu (octocon_registration_theme_
+ * mainnavigation), whose markup uses "sf-depth-*" classes instead, so
+ * ".menu-item a" - matching the theme's own disabled main_menu block -
+ * never applied to what's actually on screen. */
+.site-masthead__nav a {
+  font-family: var(--rt-font-heading);
+  font-size: 1.125rem;
+}
+
+/* Footer background, matching octocon.com's own widget-area content (event
+ * details, social links, Ko-fi banner) rather than the base theme's dark
+ * neutral. This happens to be the same blue as --rt-primary-500, so the
+ * base theme's footer link/icon colors - which are normally that same
+ * primary color, for contrast against the *dark* default background -
+ * would be invisible against it here; override them to stay legible. */
+.site-footer {
+  background-color: #03659a;
+}
+
+.site-footer__col h3 {
+  color: var(--rt-white);
+}
+
+.site-footer a {
+  color: var(--rt-white);
+}
+.site-footer a:hover,
+.site-footer a:focus {
+  color: var(--rt-neutral-050);
+}
+
+.site-footer .social-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.625rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.site-footer .social-links a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0;
+  background-color: var(--rt-white);
+  color: var(--rt-neutral-900);
+}
+
+.site-footer .social-links a:hover,
+.site-footer .social-links a:focus {
+  background-color: var(--rt-neutral-050);
+}
+
+.site-footer .social-links svg {
+  width: 1rem;
+  height: 1rem;
+  fill: currentColor;
+}
+
+/* A <select> sizes itself to its longest <option> text by default, with no
+ * base-theme rule capping it (registration_theme/css/components/form.css
+ * has none). On the Member Portal, ConReg's upgrade-option labels (e.g.
+ * "Upgrade Online Concession to Attending (Weekend) - €70") can make the
+ * member-type select wide enough to push the table's Edit column past the
+ * visible area. Cap it and truncate with an ellipsis - the full label is
+ * still shown for every option once the dropdown is open, only the closed
+ * control's width is constrained. Scoped to ConReg's tables generally
+ * (".conreg-table"), not just the Member Portal specifically, since any of
+ * ConReg's tables could put a select in a cell the same way.
+ *
+ * This and the overflow-x rule below fix a real gap in registration_theme
+ * itself (no base rule covers either case) - worth upstreaming rather than
+ * just living here, since neither is Octocon-specific. */
+.conreg-table select {
+  max-width: 14rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Keeps any table's content reachable via a horizontal scrollbar scoped to
+ * that table, instead of overflowing content (the select above, or simply
+ * enough columns/text) pushing part of the table past the visible page -
+ * hidden with no way to reach it - or forcing the whole page wider.
+ * "display: block" on a table element still renders its rows/cells via the
+ * normal table layout algorithm in every current browser (its children
+ * retain their own table-row/table-cell display values); only the table's
+ * own outer box becomes a block-level scroll container. Deliberately not
+ * scoped to just ".conreg-table" - any table anywhere in the main content
+ * (e.g. one pasted into a body field) gets the same protection. */
+.region-content table {
+  display: block;
+  overflow-x: auto;
+}

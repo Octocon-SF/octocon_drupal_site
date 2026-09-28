@@ -1,0 +1,12 @@
+octocon-branding:
+  css:
+    theme:
+      css/octocon-branding.css: {}
+  dependencies:
+    - octocon_registration_theme/fonts
+
+fonts:
+  css:
+    theme:
+      https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800&family=Nunito+Sans:wght@400;600;700&display=swap:
+        type: external

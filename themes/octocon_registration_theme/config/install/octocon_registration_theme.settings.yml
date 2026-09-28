@@ -1,0 +1,8 @@
+primary_color: '#03659a'
+neutral_color: '#2d3a42'
+header_color: '#06050b'
+banner_image_path: '/themes/custom/octocon_registration_theme/images/banner-earth-from-above.jpg'
+banner_image_position: bottom
+logo:
+  use_default: false
+  path: themes/custom/octocon_registration_theme/logo.png

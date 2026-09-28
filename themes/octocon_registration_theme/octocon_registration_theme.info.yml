@@ -1,0 +1,28 @@
+name: 'Octocon Registration Theme'
+type: theme
+base theme: registration_theme
+description: 'Octocon-branded subtheme of Registration Theme, used for the ConReg-powered convention registration site.'
+core_version_requirement: ^11
+# Drupal does not inherit a base theme's `regions` into a subtheme - without
+# this, the theme silently falls back to core's generic default region set
+# (no page_title, no footer_brand/pages/policies/social/bottom), which
+# doesn't match what registration_theme's page.html.twig actually renders.
+# Must stay identical to registration_theme.info.yml's own list.
+regions:
+  header: 'Header (logo)'
+  primary_menu: 'Primary menu'
+  page_title: 'Page title'
+  breadcrumb: Breadcrumb
+  highlighted: Highlighted
+  help: Help
+  content: Content
+  sidebar_first: 'Sidebar first'
+  footer_brand: 'Footer: Brand blurb'
+  footer_pages: 'Footer: Pages links'
+  footer_policies: 'Footer: Policies links'
+  footer_social: 'Footer: Social icons'
+  footer_bottom: 'Footer: Copyright bar'
+  page_top: 'Page top'
+  page_bottom: 'Page bottom'
+libraries:
+  - octocon_registration_theme/octocon-branding

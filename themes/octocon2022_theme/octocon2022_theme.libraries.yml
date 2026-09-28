@@ -1,0 +1,4 @@
+global-styling:
+  css:
+    theme:
+      css/octocon2022_style.css: {}

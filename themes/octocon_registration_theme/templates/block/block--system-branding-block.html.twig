@@ -1,0 +1,38 @@
+{% extends "block.html.twig" %}
+{#
+/**
+ * @file
+ * Octocon override of registration_theme's branding block template.
+ *
+ * The site name/slogan text is turned off in the block's own configuration
+ * (use_site_name / use_site_slogan settings), since the logo already carries
+ * the brand visually, matching octocon.com's own header. The logo's alt
+ * text is upgraded from the base template's generic "Home" to the site
+ * name, so that link's accessible name isn't lost along with the now-hidden
+ * text.
+ *
+ * Available variables:
+ * - site_logo: Logo for site as defined in Appearance or theme settings.
+ * - site_name: Name for site as defined in Site information settings.
+ * - site_slogan: Slogan for site as defined in Site information settings.
+ */
+#}
+{% block content %}
+  {% if site_logo %}
+    <a href="{{ path('<front>') }}" rel="home" class="site-logo">
+      <img src="{{ site_logo }}" alt="{{ 'Octocon home page'|t }}" fetchpriority="high" />
+    </a>
+  {% endif %}
+  {% if site_name or site_slogan %}
+    <div class="site-branding-text">
+      {% if site_name %}
+        <div class="site-name">
+          <a href="{{ path('<front>') }}" rel="home">{{ site_name }}</a>
+        </div>
+      {% endif %}
+      {% if site_slogan %}
+        <div class="site-slogan">{{ site_slogan }}</div>
+      {% endif %}
+    </div>
+  {% endif %}
+{% endblock %}
