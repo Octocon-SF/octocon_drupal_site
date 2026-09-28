@@ -17,6 +17,7 @@
  * (the real markup uses ".site-logo") and so never actually applied. */
 .site-masthead .site-logo img {
   height: 6.25rem;
+  max-width: 100%;
 }
 
 .site-masthead.is-stuck .site-logo img {
@@ -145,4 +146,23 @@
 .region-content table {
   display: block;
   overflow-x: auto;
+}
+
+/* Keeps form elements from overflowing the screen width at smaller mobile sizes */
+button,input,optgroup,select,textarea {
+  max-width: 100%;
+}
+
+/* The next two selectors make YouTube and other embeds responsive */
+
+iframe {
+  width: 100%;
+}
+
+@supports (aspect-ratio: 16 / 9 ) {
+  .field--name-field-streaming-id iframe {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 9;
+  }
 }
