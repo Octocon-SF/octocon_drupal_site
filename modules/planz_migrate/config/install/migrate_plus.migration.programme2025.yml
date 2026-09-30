@@ -1,0 +1,155 @@
+# Migrate PlanZ sessions from JSON file into Program Item content type.
+id: programme2025
+label: JSON feed of 2025 Programme Items
+migration_group: Programme
+migration_tags:
+  - programme2025
+source:
+  # We use the JSON source plugin.
+  plugin: url
+  # In this example we get data from a local file, to get data from a URL
+  # define http as data_fetcher_plugin.
+  # data_fetcher_plugin: http
+  data_fetcher_plugin: file
+  data_parser_plugin: json
+  # The data_parser normally limits the fields passed on to the source plugin
+  # to fields configured to be used as part of the migration. To support more
+  # dynamic migrations, the JSON data parser supports including the original
+  # data for the current row. Simply include the 'include_raw_data' flag set
+  # to `true` to enable this. This option is disabled by default to minimize
+  # memory footprint for migrations that do not need this capability.
+  # include_raw_data: true
+  # Flags whether to track changes to incoming data. If TRUE, we will maintain
+  # hashed source rows to determine whether incoming data has changed.
+  # track_changes: true
+  # Copy the example JSON file in artifacts folder to sites/default/files folder.
+  urls:
+    - '/var/www/vhosts/octocon.com/prog/2025/program_object.js'
+  # An xpath-like selector corresponding to the items to be imported.
+  item_selector: /program/
+  # Under 'fields', we list the data items to be imported. The first level keys
+  # are the source field names we want to populate (the names to be used as
+  # sources in the process configuration below). For each field we're importing,
+  # we provide a label (optional - this is for display in migration tools) and
+  # an xpath for retrieving that value. It's important to note that this xpath
+  # is relative to the elements retrieved by item_selector.
+  fields:
+    -
+      name: id
+      label: 'Unique session identifier'
+      selector: id
+    -
+      name: title
+      label: 'Session title'
+      selector: title
+    -
+      name: desc
+      label: 'Session description'
+      selector: desc
+    -
+      name: date
+      label: 'Date'
+      selector: date
+    -
+      name: time
+      label: 'Time'
+      selector: time
+    -
+      name: mins
+      label: 'Minutes'
+      selector: mins
+    -
+      name: loc
+      label: 'Location'
+      selector: loc
+    -
+      name: tags
+      label: 'Tags'
+      selector: tags
+    -
+      name: people
+      label: 'People'
+      selector: people
+    -
+      name: stream
+      label: "Streaming link"
+      selector: stream
+  # Constant values.
+  constants:
+    year: 264
+  # Under 'ids', we identify source fields populated above which will uniquely
+  # identify each imported item. The 'type' makes sure the migration map table
+  # uses the proper schema type for stored the IDs.
+  ids:
+    id:
+      type: integer
+process:
+  # Note that the source field names here (name, description and price) were
+  # defined by the 'fields' configuration for the source plugin above.
+  type:
+    plugin: default_value
+    default_value: programme_item
+  title: title
+  field_new_session_id: id
+  body/value: desc
+  body/format:
+    plugin: default_value
+    default_value: restricted_html
+  field_start_time/value:
+    -
+      plugin: concat
+      source:
+        - date
+        - time
+      delimiter: ' '
+    -
+      plugin: format_date
+      from_format: 'Y-m-d H:i'
+      to_format: 'Y-m-d\TH:i:s'
+      from_timezone: Europe/Dublin
+      to_timezone: UTC
+  field_duration: mins
+  field_location:
+    plugin: entity_generate
+    source: loc
+    value_key: name
+    bundle: location
+    entity_type: taxonomy_term
+    ignore_case: true
+  temp_tags:
+    -
+      plugin: multiple_values
+      source: tags
+    -
+      plugin: explode
+      delimiter: ':'
+    -
+      plugin: sub_process
+      process:
+        type: '0'
+        name: '1'
+  field_track:
+    -
+      plugin: extract
+      source: '@temp_tags'
+      index:
+        - 0
+    -
+      plugin: entity_lookup
+      value_key: name
+      bundle: track
+      entity_type: taxonomy_term
+  field_test:
+    plugin: sub_process
+    source: people
+    process:
+      value: name
+  field_streaming_id: stream
+  field_year: constants/year
+destination:
+  plugin: 'entity:node'
+migration_dependencies: {  }
+dependencies:
+  enforced:
+    module:
+      - planz_migrate

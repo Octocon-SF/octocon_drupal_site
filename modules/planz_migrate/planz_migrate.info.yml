@@ -1,0 +1,9 @@
+type: module
+name: PlanZ Programme Migration
+description: 'Import Programme Items from PlanZ JSON files'
+package: Octocon
+core_version_requirement: ^8.8 || ^9 || ^10 || ^11
+dependencies:
+  - drupal:migrate
+  - migrate_plus:migrate_plus
+
