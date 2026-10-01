@@ -1,0 +1,179 @@
+# Migrate PlanZ sessions from ConClár schemaVersion 2 JSON file into Program Item content type.
+id: programme2026
+label: JSON feed of 2026 Programme Items
+migration_group: Programme
+migration_tags:
+  - programme2026
+source:
+  # We use the JSON source plugin.
+  plugin: url
+  # In this example we get data from a local file, to get data from a URL
+  # define http as data_fetcher_plugin.
+  # data_fetcher_plugin: http
+  data_fetcher_plugin: file
+  data_parser_plugin: json
+  # The data_parser normally limits the fields passed on to the source plugin
+  # to fields configured to be used as part of the migration. To support more
+  # dynamic migrations, the JSON data parser supports including the original
+  # data for the current row. Simply include the 'include_raw_data' flag set
+  # to `true` to enable this. This option is disabled by default to minimize
+  # memory footprint for migrations that do not need this capability.
+  # include_raw_data: true
+  # Flags whether to track changes to incoming data. If TRUE, we will maintain
+  # hashed source rows to determine whether incoming data has changed.
+  # track_changes: true
+  # Combined ConClár data file exported from PlanZ with JSON_EXTRACT_FORMAT "v2".
+  urls:
+    - '/var/www/vhosts/octocon.com/prog/2026/conclarData.json'
+  # The file is an object: {"schemaVersion": 2, "info": {...}, "schedule": [...], "people": [...]}.
+  # Select the programme items from the schedule array.
+  item_selector: /schedule/
+  # Under 'fields', we list the data items to be imported. The first level keys
+  # are the source field names we want to populate (the names to be used as
+  # sources in the process configuration below). For each field we're importing,
+  # we provide a label (optional - this is for display in migration tools) and
+  # an xpath for retrieving that value. It's important to note that this xpath
+  # is relative to the elements retrieved by item_selector.
+  fields:
+    -
+      name: id
+      label: 'Unique session identifier'
+      selector: id
+    -
+      name: title
+      label: 'Session title'
+      selector: title
+    -
+      name: desc
+      label: 'Session description'
+      selector: desc
+    -
+      name: datetime
+      label: 'Start date and time, ISO 8601 with timezone offset'
+      selector: datetime
+    -
+      name: mins
+      label: 'Minutes'
+      selector: mins
+    -
+      name: loc
+      label: 'Location'
+      selector: loc
+    -
+      name: tags
+      label: 'Tags, as objects with value, category and label'
+      selector: tags
+    -
+      name: people
+      label: 'People, as objects with id and optional role'
+      selector: people
+  # Constant values.
+  constants:
+    # Name of the year taxonomy term. Created if it doesn't already exist.
+    year: '2026'
+  # Under 'ids', we identify source fields populated above which will uniquely
+  # identify each imported item. The 'type' makes sure the migration map table
+  # uses the proper schema type for stored the IDs.
+  ids:
+    id:
+      type: integer
+process:
+  # Note that the source field names here (name, description and price) were
+  # defined by the 'fields' configuration for the source plugin above.
+  type:
+    plugin: default_value
+    default_value: programme_item
+  title: title
+  field_new_session_id: id
+  body/value: desc
+  body/format:
+    plugin: default_value
+    default_value: restricted_html
+  # datetime includes the timezone offset (e.g. 2026-10-10T12:00:00+01:00),
+  # which takes precedence over from_timezone.
+  field_start_time/value:
+    plugin: format_date
+    source: datetime
+    from_format: 'Y-m-d\TH:i:sP'
+    to_format: 'Y-m-d\TH:i:s'
+    from_timezone: Europe/Dublin
+    to_timezone: UTC
+  field_duration: mins
+  field_location:
+    plugin: entity_generate
+    source: loc
+    value_key: name
+    bundle: location
+    entity_type: taxonomy_term
+    ignore_case: true
+  # PlanZ always exports the Track tag first:
+  # {"value": "track-23", "category": "Track", "label": "Communities"}.
+  field_track:
+    -
+      plugin: extract
+      source: tags
+      index:
+        - 0
+        - label
+    -
+      plugin: entity_generate
+      value_key: name
+      bundle: track
+      entity_type: taxonomy_term
+      ignore_case: true
+  # People only carry the participant id (and role), so look up the name from
+  # the participant taxonomy term with the matching field_participant_id.
+  field_test:
+    plugin: sub_process
+    source: people
+    process:
+      temp_name:
+        -
+          plugin: entity_lookup
+          source: id
+          value_key: field_participant_id
+          bundle_key: vid
+          bundle: participant
+          entity_type: taxonomy_term
+        -
+          plugin: skip_on_empty
+          method: process
+        -
+          plugin: entity_value
+          entity_type: taxonomy_term
+          field_name: name
+        -
+          plugin: extract
+          index:
+            - 0
+            - value
+      temp_role:
+        plugin: static_map
+        source: role
+        map:
+          moderator: ' (moderator)'
+        default_value: ''
+      # Skip participants whose name wasn't found, then append the role.
+      value:
+        -
+          plugin: skip_on_empty
+          source: '@temp_name'
+          method: process
+        -
+          plugin: get
+          source:
+            - '@temp_name'
+            - '@temp_role'
+        -
+          plugin: concat
+  # Bundle is taken from the field_year field settings.
+  field_year:
+    plugin: entity_generate
+    source: constants/year
+destination:
+  plugin: 'entity:node'
+migration_dependencies: {  }
+dependencies:
+  enforced:
+    module:
+      - planz_migrate
