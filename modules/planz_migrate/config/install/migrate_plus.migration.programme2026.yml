@@ -67,6 +67,10 @@ source:
       name: people
       label: 'People, as objects with id and optional role'
       selector: people
+    -
+      name: stream
+      label: 'Streaming link'
+      selector: links/stream
   # Constant values.
   constants:
     # Name of the year taxonomy term. Created if it doesn't already exist.
@@ -166,6 +170,8 @@ process:
             - '@temp_role'
         -
           plugin: concat
+  # Exported by PlanZ when STREAMING_LINK is TRUE and the session has a streaming link.
+  field_streaming_id: stream
   # Bundle is taken from the field_year field settings.
   field_year:
     plugin: entity_generate
